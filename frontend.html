@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Consulta de Calificaciones</title>
+</head>
+<body>
+    <h1>Calificaciones de Coaching</h1>
+    <form id="consultaForm">
+        Introduce tu correo Institucional: <input type="email" id="emailInput" required>
+        <button type="submit">Consultar</button>
+    </form>
+    <div id="resultados" style="margin-top: 20px;"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('consultaForm').addEventListener('submit', async function(e) {
+                e.preventDefault(); // Evita que el formulario se envíe de la manera tradicional
+                const email = document.getElementById('emailInput').value;
+                
+                // Realizar la solicitud al backend
+                try {
+                    const response = await fetch('http://127.0.0.1:8000/get_grade', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({email: email})
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Error: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    mostrarResultados(data);
+                } catch (error) {
+                    console.error('Error al consultar las calificaciones', error);
+                    mostrarResultados({error: 'No se pudo obtener la calificación. Intente de nuevo.'});
+                }
+            });
+
+            function mostrarResultados(data) {
+                const resultadosDiv = document.getElementById('resultados');
+                resultadosDiv.innerHTML = '';
+
+                if (data.error) {
+                    resultadosDiv.innerHTML = `<p>${data.error}</p>`;
+                    return;
+                }
+
+                // Mostrar los resultados en la página
+                resultadosDiv.innerHTML = `
+                    <p>Examen 10 pts: ${data['examen 10 pts']}</p>
+                    <p>Examen 60%: ${data['examen60%']}</p>
+                    <p>Proyecto: ${data['proyecto']}</p>
+                    <p>Participación: ${data['participación']}</p>
+                    <p>Calificación Bloque 3: ${data['Calificación Bloque 3']}</p>
+                    <p>Calificación final: ${data['Calificación final']}</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
